@@ -7,15 +7,20 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true
+        // 🔥 FIX: force IPv4 (prevents ECONNREFUSED on Windows)
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false
       }
     }
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
+
+    // 🔥 FIX: use built-in minifier (no extra dependency needed)
+    minify: 'esbuild',
+
     rollupOptions: {
       output: {
         manualChunks: {

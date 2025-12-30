@@ -41,7 +41,7 @@ public class EstimationController {
     public ResponseEntity<ApiResponse<EstimateResponseDTO>> calculateEstimate(
             @RequestBody EstimateRequestDTO request) {
         log.info("Calculating estimate for {} - {} package", request.getBhkType(), request.getPackageType());
-        
+
         try {
             EstimateResponseDTO estimate = estimationService.calculateEstimate(request);
             return ResponseEntity.ok(ApiResponse.success(estimate));
@@ -58,7 +58,7 @@ public class EstimationController {
     public ResponseEntity<ApiResponse<EstimateEnquiry>> saveEstimateEnquiry(
             @Valid @RequestBody EstimateEnquiryDTO enquiryDTO) {
         log.info("Saving estimate enquiry for: {}", enquiryDTO.getName());
-        
+
         try {
             EstimateEnquiry enquiry = estimationService.saveEstimateEnquiry(enquiryDTO);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -86,15 +86,15 @@ public class EstimationController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getQuickEstimate(
             @PathVariable String bhkType,
             @RequestParam(defaultValue = "premium") String packageType) {
-        
+
         EstimateRequestDTO request = EstimateRequestDTO.builder()
                 .bhkType(bhkType)
                 .packageType(packageType)
                 .build();
-        
+
         try {
             EstimateResponseDTO estimate = estimationService.calculateEstimate(request);
-            
+
             Map<String, Object> quickEstimate = Map.of(
                     "bhkType", bhkType.toUpperCase(),
                     "package", estimate.getPackageName(),
@@ -103,7 +103,7 @@ public class EstimationController {
                     "area", estimate.getArea(),
                     "formatted", String.format("₹%,d", estimate.getGrandTotal())
             );
-            
+
             return ResponseEntity.ok(ApiResponse.success(quickEstimate));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()

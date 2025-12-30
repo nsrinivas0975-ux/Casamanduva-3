@@ -1,3 +1,4 @@
+/*
 package com.casamanduva.config;
 
 import com.casamanduva.dto.ApiResponse;
@@ -73,3 +74,4 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Something went wrong. Please try again later."));
     }
 }
+*/

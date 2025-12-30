@@ -116,6 +116,10 @@ public class NotificationService {
     }
 
     private String buildEstimateEmailBody(EstimateEnquiry enquiry) {
+        // Safe null handling for bhkType and packageType
+        String bhkTypeDisplay = enquiry.getBhkType() != null ? enquiry.getBhkType().toUpperCase() : "Not specified";
+        String packageTypeDisplay = enquiry.getPackageType() != null ? enquiry.getPackageType() : "Not specified";
+
         return String.format("""
                 New Estimate Request!
                 
@@ -148,8 +152,8 @@ public class NotificationService {
                 enquiry.getPhone(),
                 enquiry.getEmail() != null ? enquiry.getEmail() : "Not provided",
                 enquiry.getLocation() != null ? enquiry.getLocation() : "Not specified",
-                enquiry.getBhkType().toUpperCase(),
-                enquiry.getPackageType() != null ? enquiry.getPackageType() : "Not specified",
+                bhkTypeDisplay,
+                packageTypeDisplay,
                 enquiry.getArea() != null ? enquiry.getArea() : 0,
                 enquiry.getSelectedRooms() != null ? enquiry.getSelectedRooms() : "Default",
                 enquiry.getEstimatedBudget() != null ? String.format("%,.0f", enquiry.getEstimatedBudget()) : "Not calculated",

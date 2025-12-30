@@ -1,32 +1,26 @@
 package com.casamanduva.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class EstimateEnquiryDTO {
 
-    @NotBlank(message = "Name is required")
     private String name;
-
-    @NotBlank(message = "Phone is required")
     private String phone;
-
     private String email;
     private String location;
 
-    @NotBlank(message = "BHK type is required")
-    private String bhkType;
-
-    private String packageType;
-    private String selectedRooms;
     private Integer area;
+    private BhkType bhkType;
+    private PackageType packageType;
+
+    // frontend sends String → we handle conversion in service
+    private String selectedRooms;
+
+    // frontend sends this → backend ignores/calculates
     private Long estimatedBudget;
+
     private String source;
 }

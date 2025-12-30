@@ -8,11 +8,11 @@ import com.casamanduva.model.EstimateEnquiry;
 import com.casamanduva.repository.EstimateEnquiryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -106,8 +106,8 @@ public class EstimationService {
             throw new IllegalArgumentException("Invalid BHK or package type");
         }
 
-        int area = request.getArea() != null && request.getArea() > 0 
-                ? request.getArea() 
+        int area = request.getArea() != null && request.getArea() > 0
+                ? request.getArea()
                 : bhkConfig.baseArea;
 
         List<String> selectedRooms = request.getSelectedRooms() != null && !request.getSelectedRooms().isEmpty()
@@ -166,8 +166,8 @@ public class EstimationService {
                 .packageType(dto.getPackageType())
                 .selectedRooms(dto.getSelectedRooms())
                 .area(dto.getArea())
-                .estimatedBudget(dto.getEstimatedBudget() != null 
-                        ? new BigDecimal(dto.getEstimatedBudget()) 
+                .estimatedBudget(dto.getEstimatedBudget() != null
+                        ? new BigDecimal(dto.getEstimatedBudget())
                         : null)
                 .source(dto.getSource())
                 .status(Enquiry.EnquiryStatus.NEW)
