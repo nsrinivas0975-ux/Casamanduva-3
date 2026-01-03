@@ -1,32 +1,34 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
-import { useEffect } from 'react'
-import ErrorBoundary from './components/ErrorBoundary'
-import Header from './components/Header'
-import Footer from './components/Footer'
-import WhatsAppButton from './components/WhatsAppButton'
-import NotificationBanner from './components/NotificationBanner'
-import Home from './pages/Home'
-import About from './pages/About'
-import Services from './pages/Services'
-import Portfolio from './pages/Portfolio'
-import Contact from './pages/Contact'
-import Estimator from './pages/Estimator'
-import NotFound from './pages/NotFound'
-import { trackVisitor } from './services/api'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
+import ErrorBoundary from "./components/ErrorBoundary";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import WhatsAppButton from "./components/WhatsAppButton";
+import NotificationBanner from "./components/NotificationBanner";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Portfolio from "./pages/Portfolio";
+import Contact from "./pages/Contact";
+import Estimator from "./pages/Estimator";
+import NotFound from "./pages/NotFound";
+import { trackVisitor } from "./services/api";
+import InteriorSolutionsSection from "./components/InteriorSolutionsSection";
+
+import "./App.css";
 
 function App() {
   useEffect(() => {
     const initVisitorTracking = async () => {
       try {
-        await trackVisitor()
+        await trackVisitor();
       } catch (error) {
-        console.log('Visitor tracking:', error.message)
+        console.log("Visitor tracking:", error.message);
       }
-    }
-    initVisitorTracking()
-  }, [])
+    };
+    initVisitorTracking();
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -37,13 +39,13 @@ function App() {
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#2C2C2C',
-                color: '#fff',
+                background: "#2C2C2C",
+                color: "#fff",
               },
               success: {
                 iconTheme: {
-                  primary: '#C9A96E',
-                  secondary: '#fff',
+                  primary: "#C9A96E",
+                  secondary: "#fff",
                 },
               },
             }}
@@ -61,12 +63,13 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+          <InteriorSolutionsSection />
           <Footer />
           <WhatsAppButton />
         </div>
       </Router>
     </ErrorBoundary>
-  )
+  );
 }
 
-export default App
+export default App;
