@@ -4,22 +4,22 @@ import AnimatedSection from '../components/AnimatedSection';
 
 const teamMembers = [
   {
-    name: 'Arjun Mehta',
-    role: 'Founder & Principal Designer',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-    bio: '15+ years of experience in luxury interior design with projects across India.',
+    name: 'Design Excellence',
+    role: 'Our Approach',
+    image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&h=400&fit=crop',
+    bio: '15+ years of creating timeless interiors that blend functionality with aesthetic beauty.',
   },
   {
-    name: 'Priya Sharma',
-    role: 'Creative Director',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
-    bio: 'Award-winning designer specializing in contemporary and fusion styles.',
+    name: 'Creative Innovation',
+    role: 'Our Philosophy',
+    image: 'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=400&h=400&fit=crop',
+    bio: 'Award-winning designs that push boundaries while respecting your personal style and needs.',
   },
   {
-    name: 'Vikram Singh',
-    role: 'Project Head',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-    bio: 'Expert in project management ensuring timely delivery and quality execution.',
+    name: 'Quality Execution',
+    role: 'Our Promise',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop',
+    bio: 'Expert project management ensuring timely delivery with uncompromising quality standards.',
   },
 ];
 
@@ -102,7 +102,7 @@ const About = () => {
               </p>
               <div className="about-signature">
                 <span className="signature-line"></span>
-                <span className="signature-text">— Arjun Mehta, Founder</span>
+                <span className="signature-text">— CASAMANDUVA Team</span>
               </div>
             </AnimatedSection>
           </div>
@@ -153,12 +153,12 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Expertise Section */}
       <section className="section" style={{ background: 'var(--color-ivory)' }}>
         <div className="container">
           <AnimatedSection className="section-header">
-            <span className="section-badge">Our Team</span>
-            <h2 className="section-title">Meet the <span className="text-gold">Experts</span></h2>
+            <span className="section-badge">Our Expertise</span>
+            <h2 className="section-title">What Sets Us <span className="text-gold">Apart</span></h2>
           </AnimatedSection>
 
           <div className="testimonials-grid">

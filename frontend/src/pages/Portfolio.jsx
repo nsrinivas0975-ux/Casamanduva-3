@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import AnimatedSection from '../components/AnimatedSection';
 
@@ -88,10 +89,19 @@ const projects = [
 
 const Portfolio = () => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedProject, setSelectedProject] = useState(null);
 
-  const filteredProjects = activeFilter === 'all' 
-    ? projects 
+  const filteredProjects = activeFilter === 'all'
+    ? projects
     : projects.filter(p => p.category === activeFilter);
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+  };
+
+  const closeModal = () => {
+    setSelectedProject(null);
+  };
 
   const portfolioSchema = {
     '@context': 'https://schema.org',
@@ -167,7 +177,13 @@ const Portfolio = () => {
         <div className="container">
           <div className="portfolio-grid">
             {filteredProjects.map((project, index) => (
-              <AnimatedSection key={project.id} className="project-card" animation="fadeUp" delay={index * 0.1}>
+              <AnimatedSection
+                key={project.id}
+                className="project-card"
+                animation="fadeUp"
+                delay={index * 0.1}
+                onClick={() => handleProjectClick(project)}
+              >
                 <div className="project-image">
                   <img src={project.image} alt={project.title} loading="lazy" />
                   <div className="project-overlay">
@@ -210,6 +226,156 @@ const Portfolio = () => {
           </div>
         </div>
       </section>
+
+      {/* Project Modal */}
+      {selectedProject && (
+        <div
+          className="project-modal-overlay"
+          onClick={closeModal}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.9)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+            animation: 'fadeIn 0.3s ease'
+          }}
+        >
+          <div
+            className="project-modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white',
+              borderRadius: 'var(--radius-md)',
+              maxWidth: '900px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative',
+              animation: 'fadeInUp 0.4s ease'
+            }}
+          >
+            <button
+              onClick={closeModal}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'white',
+                border: 'none',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                zIndex: 10,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+
+            <img
+              src={selectedProject.image}
+              alt={selectedProject.title}
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '500px',
+                objectFit: 'cover',
+                borderRadius: 'var(--radius-md) var(--radius-md) 0 0'
+              }}
+            />
+
+            <div style={{ padding: '2rem' }}>
+              <span style={{
+                display: 'inline-block',
+                padding: '0.35rem 0.85rem',
+                background: 'rgba(201, 169, 110, 0.1)',
+                color: 'var(--color-gold)',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                borderRadius: 'var(--radius-full)',
+                marginBottom: '1rem'
+              }}>
+                {selectedProject.category}
+              </span>
+
+              <h2 style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '2rem',
+                marginBottom: '1rem',
+                color: 'var(--color-charcoal)'
+              }}>
+                {selectedProject.title}
+              </h2>
+
+              <div style={{
+                display: 'flex',
+                gap: '2rem',
+                marginBottom: '1.5rem',
+                color: 'var(--color-text-secondary)',
+                fontSize: '0.95rem',
+                flexWrap: 'wrap'
+              }}>
+                <div>
+                  <strong style={{ color: 'var(--color-charcoal)' }}>Location:</strong> {selectedProject.location}
+                </div>
+                <div>
+                  <strong style={{ color: 'var(--color-charcoal)' }}>Area:</strong> {selectedProject.area}
+                </div>
+                <div>
+                  <strong style={{ color: 'var(--color-charcoal)' }}>Year:</strong> {selectedProject.year}
+                </div>
+              </div>
+
+              <p style={{
+                fontSize: '1rem',
+                lineHeight: '1.8',
+                color: 'var(--color-text-secondary)',
+                marginBottom: '2rem'
+              }}>
+                This {selectedProject.category} project showcases our commitment to design excellence.
+                Every detail was carefully crafted to create a space that perfectly balances aesthetics
+                with functionality, reflecting the unique personality and lifestyle of our client.
+              </p>
+
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+                flexWrap: 'wrap'
+              }}>
+                <Link
+                  to="/estimator"
+                  className="btn btn-primary"
+                  onClick={closeModal}
+                >
+                  Get Similar Design
+                </Link>
+                <Link
+                  to="/contact"
+                  className="btn btn-outline"
+                  onClick={closeModal}
+                >
+                  Discuss Your Project
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -46,7 +46,7 @@ const BHK_DATA = {
 const PACKAGES = {
   essential: {
     name: "Essential",
-    rate: 1800,
+    rate: 1300,
     description: "Quality materials with functional design",
     features: [
       "Basic modular furniture",
@@ -58,7 +58,7 @@ const PACKAGES = {
   },
   premium: {
     name: "Premium",
-    rate: 2500,
+    rate: 1600,
     description: "Premium materials with elegant design",
     features: [
       "Premium modular furniture",
@@ -72,7 +72,7 @@ const PACKAGES = {
   },
   luxury: {
     name: "Luxury",
-    rate: 3500,
+    rate: 1800,
     description: "Luxury materials with bespoke design",
     features: [
       "Luxury custom furniture",
@@ -466,7 +466,8 @@ const Estimator = () => {
                         opacity: 0.7,
                       }}
                     >
-                      ≈ ₹{estimate.perSqFt}/sq.ft
+                      //≈ ₹{estimate.perSqFt}/sq.ft
+                      Free
                     </p>
                   </div>
 

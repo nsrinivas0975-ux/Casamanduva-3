@@ -37,7 +37,7 @@ const EnquiryForm = ({ source = 'contact' }) => {
     if (!formData.message?.trim()) {
       newErrors.message = 'Project description required';
     } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'At least 10 characters';
+      newErrors.message = 'At least 10 characters required';
     }
 
     setErrors(newErrors);
@@ -56,7 +56,7 @@ const EnquiryForm = ({ source = 'contact' }) => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error('Please fix the errors');
+      toast.error('Please fix the errors before submitting');
       return;
     }
 
@@ -139,6 +139,7 @@ const EnquiryForm = ({ source = 'contact' }) => {
               placeholder="Your name"
               maxLength="255"
               disabled={isSubmitting}
+              className={errors.name ? 'error' : ''}
             />
             {errors.name && <span className="error-text">{errors.name}</span>}
           </div>
@@ -153,6 +154,7 @@ const EnquiryForm = ({ source = 'contact' }) => {
               placeholder="your@email.com"
               maxLength="255"
               disabled={isSubmitting}
+              className={errors.email ? 'error' : ''}
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
@@ -169,6 +171,7 @@ const EnquiryForm = ({ source = 'contact' }) => {
               onChange={handleChange}
               placeholder="+91 00000 00000"
               disabled={isSubmitting}
+              className={errors.phone ? 'error' : ''}
             />
             {errors.phone && <span className="error-text">{errors.phone}</span>}
           </div>
@@ -234,7 +237,18 @@ const EnquiryForm = ({ source = 'contact' }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="message">Tell us about your project *</label>
+          <label htmlFor="message">
+            Tell us about your project *
+            {errors.message && (
+              <span style={{
+                color: 'var(--color-error)',
+                fontWeight: '600',
+                marginLeft: '0.5rem'
+              }}>
+                - {errors.message}
+              </span>
+            )}
+          </label>
           <textarea
             id="message"
             name="message"
@@ -244,9 +258,25 @@ const EnquiryForm = ({ source = 'contact' }) => {
             rows="5"
             maxLength="5000"
             disabled={isSubmitting}
+            className={errors.message ? 'error' : ''}
           />
-          <span className="char-count">{formData.message.length}/5000</span>
-          {errors.message && <span className="error-text">{errors.message}</span>}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: '0.5rem'
+          }}>
+            <span className="char-count">{formData.message.length}/5000</span>
+            {formData.message.length > 0 && formData.message.length < 10 && (
+              <span style={{
+                color: 'var(--color-error)',
+                fontSize: '0.85rem',
+                fontWeight: '500'
+              }}>
+                {10 - formData.message.length} more characters needed
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="form-actions">
