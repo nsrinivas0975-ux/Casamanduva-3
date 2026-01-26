@@ -99,34 +99,48 @@ public class ContactController {
                     .body(ApiResponse.error("Invalid email format"));
         }
 
+        // ✅ CASE 1: already subscribed → RESEND discount email
         if (newsletterRepository.existsByEmail(email)) {
-            return ResponseEntity.ok(ApiResponse.success(null, "You're already subscribed!"));
+            log.info("Newsletter already subscribed. Re-sending discount email to: {}", email);
+
+            try {
+                notificationService.sendNewsletterWelcome(email); // contains CASA10OFF
+            } catch (Exception e) {
+                log.error("Failed to re-send discount email", e);
+            }
+
+            return ResponseEntity.ok(
+                    ApiResponse.success(null, "Discount code re-sent to your email!")
+            );
         }
 
+        // ✅ CASE 2: new subscriber
         try {
             NewsletterSubscriber subscriber = NewsletterSubscriber.builder()
                     .email(email)
                     .source(request.getOrDefault("source", "website"))
+                    .active(true)
                     .build();
 
             NewsletterSubscriber saved = newsletterRepository.save(subscriber);
             log.info("New newsletter subscriber: {}", email);
 
-            // 🔥 SEND WELCOME EMAIL TO USER
             try {
                 notificationService.sendNewsletterWelcome(email);
             } catch (Exception e) {
-                log.error("Failed to send newsletter welcome email", e);
+                log.error("Failed to send discount email", e);
             }
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(saved, "Successfully subscribed to our newsletter!"));
+                    .body(ApiResponse.success(saved, "Discount code sent to your email!"));
+
         } catch (Exception e) {
             log.error("Error subscribing to newsletter", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Failed to subscribe. Please try again."));
         }
     }
+
 
     @PostMapping("/newsletter/unsubscribe")
     public ResponseEntity<ApiResponse<Object>> unsubscribeNewsletter(

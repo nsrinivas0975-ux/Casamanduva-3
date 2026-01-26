@@ -165,7 +165,13 @@ public class NotificationService {
 
     @Async
     public void sendNewsletterWelcome(String email) {
-        if (!notificationEnabled || fromEmail == null || fromEmail.isEmpty()) {
+        if (!notificationEnabled) {
+            log.error("❌ EMAIL DISABLED! Set app.notification.enabled=true in application.properties");
+            return;
+        }
+
+        if (fromEmail == null || fromEmail.isEmpty() || fromEmail.contains("your-email")) {
+            log.error("❌ EMAIL NOT CONFIGURED! Set spring.mail.username and spring.mail.password");
             return;
         }
 
@@ -183,6 +189,7 @@ public class NotificationService {
 
         } catch (Exception e) {
             log.error("❌ Failed to send newsletter welcome to: {}", email, e);
+            log.error("Error details: {}", e.getMessage());
         }
     }
 
