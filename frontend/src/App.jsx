@@ -20,9 +20,6 @@ import NotFound from "./pages/NotFound";
 import "./App.css";
 
 function App() {
-  // Visitor tracking is now handled by Google Analytics (gtag).
-  // No API call needed here.
-
   return (
     <ErrorBoundary>
       <Router>

@@ -1,35 +1,33 @@
 // ================================================
 // CASAMANDUVA - Frontend-only API Service
-// Uses EmailJS for form submissions (no backend)
+// EmailJS only. Zero backend. Zero axios.
 // ================================================
 
 import emailjs from '@emailjs/browser';
 
-// ── EmailJS config ──────────────────────────────
+// ── Your EmailJS credentials ─────────────────────
 const EMAILJS_SERVICE_ID = 'service_e49hvl5';
 const EMAILJS_PUBLIC_KEY = 'OUaB704vITVaQUJVf';
-
-// Your 2 templates
-const TEMPLATE_ENQUIRY  = 'template_vkz0yom';  // Enquiry form + Newsletter
-const TEMPLATE_ESTIMATE = 'template_bx8kx8y';  // Estimate enquiry
+const TEMPLATE_ENQUIRY   = 'template_vkz0yom'; // Enquiry form + Newsletter
+const TEMPLATE_ESTIMATE  = 'template_bx8kx8y'; // Estimate enquiry
 // ─────────────────────────────────────────────────
 
-let _emailjsInitialised = false;
+let _initialised = false;
 
 function initEmailJS() {
-  if (_emailjsInitialised) return;
+  if (_initialised) return;
   emailjs.init(EMAILJS_PUBLIC_KEY);
-  _emailjsInitialised = true;
+  _initialised = true;
 }
 
-// ── VISITOR TRACKING (no-op — GA4 handles this) ──
+// ── VISITOR TRACKING (no-op — use Google Analytics) ──
 export const trackVisitor = async () => Promise.resolve();
 
 // ── ENQUIRY FORM ──────────────────────────────────
 export const submitEnquiry = async (enquiryData) => {
   if (!enquiryData.name?.trim())         throw new Error('Name is required');
   if (!enquiryData.email?.includes('@')) throw new Error('Valid email is required');
-  if (!enquiryData.phone?.match(/^[0-9+\-()\\s]{10,}$/)) {
+  if (!enquiryData.phone?.match(/^[0-9+\-()\s]{10,}$/)) {
     throw new Error('Valid phone number required');
   }
   if (!enquiryData.message?.trim()) throw new Error('Project description required');
@@ -71,18 +69,18 @@ export const submitEnquiry = async (enquiryData) => {
   }
 };
 
-// Aliases
+// Aliases — single declaration only
 export const submitContactForm = submitEnquiry;
 export const getEnquiries = async () => [];
 
 // ── ESTIMATE ENQUIRY ──────────────────────────────
 export const saveEstimateEnquiry = async (data) => {
   if (!data.name?.trim()) throw new Error('Name is required');
-  if (!data.phone?.match(/^[0-9+\-()\\s]{10,}$/)) {
+  if (!data.phone?.match(/^[0-9+\-()\s]{10,}$/)) {
     throw new Error('Valid phone required');
   }
   if (!data.area || data.area < 300 || data.area > 5000) {
-    throw new Error('Area must be 300–5000 sq.ft');
+    throw new Error('Area must be 300-5000 sq.ft');
   }
 
   initEmailJS();
@@ -98,7 +96,7 @@ export const saveEstimateEnquiry = async (data) => {
       area:             data.area,
       selected_rooms:   data.selectedRooms || 'Default rooms',
       estimated_budget: data.estimatedBudget
-        ? `₹${Number(data.estimatedBudget).toLocaleString('en-IN')}`
+        ? `Rs.${Number(data.estimatedBudget).toLocaleString('en-IN')}`
         : 'Not calculated',
       reply_to:         data.email?.trim() || '',
     });
@@ -111,7 +109,7 @@ export const saveEstimateEnquiry = async (data) => {
 };
 
 // ── NEWSLETTER ────────────────────────────────────
-// Reuses TEMPLATE_ENQUIRY with source = 'Newsletter Subscription'
+// Reuses TEMPLATE_ENQUIRY — source field = 'Newsletter Subscription'
 export const subscribeNewsletter = async (email) => {
   if (!email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
     throw new Error('Invalid email format');
@@ -139,7 +137,7 @@ export const subscribeNewsletter = async (email) => {
   }
 };
 
-// ── Estimate helpers (client-side only) ──────────
+// ── Estimate helpers (fully client-side) ─────────
 export const getBHKEstimations = async () => Promise.resolve({});
 export const calculateEstimate = async () => Promise.resolve({});
 
