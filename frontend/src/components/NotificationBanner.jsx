@@ -5,11 +5,9 @@ const NotificationBanner = () => {
   const [notificationData, setNotificationData] = useState(null);
 
   useEffect(() => {
-    // Check if user has seen notification in this session
     const hasSeenNotification = sessionStorage.getItem('casamanduva_notification_seen');
-    
+
     if (!hasSeenNotification) {
-      // Show notification after 3 seconds
       const timer = setTimeout(() => {
         setNotificationData({
           title: 'Welcome to CASAMANDUVA! 🏠',
@@ -17,7 +15,7 @@ const NotificationBanner = () => {
         });
         setIsVisible(true);
 
-        // Request browser notification permission
+        // Browser notification (if permission granted)
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('Welcome to CASAMANDUVA!', {
             body: 'Get a FREE consultation + 10% off on your first project!',
@@ -33,9 +31,7 @@ const NotificationBanner = () => {
     }
   }, []);
 
-  const handleClose = () => {
-    setIsVisible(false);
-  };
+  const handleClose = () => setIsVisible(false);
 
   if (!notificationData) return null;
 

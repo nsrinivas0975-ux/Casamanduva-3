@@ -17,12 +17,8 @@ const BHK_DATA = {
     name: "2 BHK",
     baseArea: 950,
     rooms: [
-      "Living Room",
-      "Master Bedroom",
-      "Bedroom 2",
-      "Kitchen",
-      "Bathroom 1",
-      "Bathroom 2",
+      "Living Room", "Master Bedroom", "Bedroom 2",
+      "Kitchen", "Bathroom 1", "Bathroom 2",
     ],
     basePrice: 550000,
   },
@@ -30,14 +26,8 @@ const BHK_DATA = {
     name: "3 BHK",
     baseArea: 1400,
     rooms: [
-      "Living Room",
-      "Master Bedroom",
-      "Bedroom 2",
-      "Bedroom 3",
-      "Kitchen",
-      "Bathroom 1",
-      "Bathroom 2",
-      "Bathroom 3",
+      "Living Room", "Master Bedroom", "Bedroom 2", "Bedroom 3",
+      "Kitchen", "Bathroom 1", "Bathroom 2", "Bathroom 3",
     ],
     basePrice: 850000,
   },
@@ -48,25 +38,14 @@ const PACKAGES = {
     name: "Essential",
     rate: 1300,
     description: "Quality materials with functional design",
-    features: [
-      "Basic modular furniture",
-      "Standard finishes",
-      "Essential lighting",
-      "1-year warranty",
-    ],
+    features: ["Basic modular furniture", "Standard finishes", "Essential lighting", "1-year warranty"],
     multiplier: 1,
   },
   premium: {
     name: "Premium",
     rate: 1600,
     description: "Premium materials with elegant design",
-    features: [
-      "Premium modular furniture",
-      "Designer finishes",
-      "Accent lighting",
-      "False ceiling",
-      "2-year warranty",
-    ],
+    features: ["Premium modular furniture", "Designer finishes", "Accent lighting", "False ceiling", "2-year warranty"],
     multiplier: 1.4,
     popular: true,
   },
@@ -75,12 +54,8 @@ const PACKAGES = {
     rate: 1800,
     description: "Luxury materials with bespoke design",
     features: [
-      "Luxury custom furniture",
-      "Imported finishes",
-      "Smart lighting",
-      "Full false ceiling",
-      "Home automation ready",
-      "3-year warranty",
+      "Luxury custom furniture", "Imported finishes", "Smart lighting",
+      "Full false ceiling", "Home automation ready", "3-year warranty",
     ],
     multiplier: 1.95,
   },
@@ -89,19 +64,19 @@ const PACKAGES = {
 const ROOM_PRICES = {
   "Living Room": 80000,
   "Master Bedroom": 75000,
-  Bedroom: 60000,
+  "Bedroom": 60000,
   "Bedroom 2": 60000,
   "Bedroom 3": 55000,
-  Kitchen: 120000,
+  "Kitchen": 120000,
   "Modular Kitchen": 150000,
-  Bathroom: 35000,
+  "Bathroom": 35000,
   "Bathroom 1": 35000,
   "Bathroom 2": 30000,
   "Bathroom 3": 30000,
-  Wardrobe: 45000,
+  "Wardrobe": 45000,
   "Study Room": 50000,
   "Pooja Room": 40000,
-  Balcony: 25000,
+  "Balcony": 25000,
 };
 
 const Estimator = () => {
@@ -111,54 +86,39 @@ const Estimator = () => {
   const [customArea, setCustomArea] = useState("");
   const [estimate, setEstimate] = useState(null);
   const [showEnquiryForm, setShowEnquiryForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    location: "",
-  });
+  const [formData, setFormData] = useState({ name: "", phone: "", email: "", location: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize selected rooms when BHK changes
   useEffect(() => {
-    const bhkData = BHK_DATA[selectedBHK];
-    setSelectedRooms(bhkData.rooms);
+    setSelectedRooms(BHK_DATA[selectedBHK].rooms);
   }, [selectedBHK]);
 
-  // Calculate estimate whenever selections change
   useEffect(() => {
     calculateEstimate();
   }, [selectedBHK, selectedRooms, selectedPackage, customArea]);
 
   const calculateEstimate = () => {
-    const bhkData = BHK_DATA[selectedBHK];
+    const bhkData     = BHK_DATA[selectedBHK];
     const packageData = PACKAGES[selectedPackage];
-    const area = customArea ? parseInt(customArea) : bhkData.baseArea;
+    const area        = customArea ? parseInt(customArea) : bhkData.baseArea;
 
-    // Calculate room-wise cost
     let roomTotal = 0;
     const roomBreakdown = [];
 
     selectedRooms.forEach((room) => {
-      const roomKey =
-        Object.keys(ROOM_PRICES).find(
-          (key) => room.includes(key) || key.includes(room)
-        ) || room;
-      const basePrice = ROOM_PRICES[roomKey] || ROOM_PRICES["Bedroom"] || 50000;
+      const roomKey = Object.keys(ROOM_PRICES).find(
+        (key) => room.includes(key) || key.includes(room)
+      ) || room;
+      const basePrice    = ROOM_PRICES[roomKey] || ROOM_PRICES["Bedroom"] || 50000;
       const adjustedPrice = Math.round(basePrice * packageData.multiplier);
       roomTotal += adjustedPrice;
       roomBreakdown.push({ room, price: adjustedPrice });
     });
 
-    // Calculate area-based cost
-    const areaCost = area * packageData.rate;
-
-    // Total estimate (using the higher of the two methods for accuracy)
+    const areaCost     = area * packageData.rate;
     const totalEstimate = Math.max(roomTotal, areaCost);
-
-    // Add 10% for miscellaneous and finishing
-    const miscCost = Math.round(totalEstimate * 0.1);
-    const grandTotal = totalEstimate + miscCost;
+    const miscCost     = Math.round(totalEstimate * 0.1);
+    const grandTotal   = totalEstimate + miscCost;
 
     setEstimate({
       bhk: bhkData.name,
@@ -192,25 +152,20 @@ const Estimator = () => {
     setIsSubmitting(true);
 
     try {
-      const enquiryData = {
+      await saveEstimateEnquiry({
         ...formData,
-        bhkType: selectedBHK,
-        packageType: selectedPackage,
+        bhkType:       selectedBHK,
+        packageType:   selectedPackage,
         selectedRooms: selectedRooms.join(", "),
-        area: customArea || BHK_DATA[selectedBHK].baseArea,
+        area:          customArea || BHK_DATA[selectedBHK].baseArea,
         estimatedBudget: estimate?.grandTotal,
-        source: "estimator",
-      };
+        source:        "estimator",
+      });
 
-      await saveEstimateEnquiry(enquiryData);
-
-      toast.success(
-        "Thank you! Our team will contact you with a detailed quote."
-      );
+      toast.success("Thank you! Our team will contact you with a detailed quote.");
       setShowEnquiryForm(false);
       setFormData({ name: "", phone: "", email: "", location: "" });
 
-      // Track conversion
       if (window.gtag) {
         window.gtag("event", "conversion", {
           send_to: "AW-XXXXXXXXX/ESTIMATE_CONVERSION_ID",
@@ -226,7 +181,9 @@ const Estimator = () => {
         });
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      // Fallback to WhatsApp so lead is never lost
+      toast.error("Submission failed — opening WhatsApp instead.");
+      setTimeout(() => openWhatsApp(), 1000);
     } finally {
       setIsSubmitting(false);
     }
@@ -234,11 +191,10 @@ const Estimator = () => {
 
   const openWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hi CASAMANDUVA! I used your estimator and got a quote of ₹${estimate?.grandTotal?.toLocaleString(
-        "en-IN"
-      )} for my ${
-        BHK_DATA[selectedBHK].name
-      } (${selectedPackage} package). I'd like to discuss this further.`
+      `Hi CASAMANDUVA! I used your estimator and got a quote of ` +
+      `₹${estimate?.grandTotal?.toLocaleString("en-IN")} for my ` +
+      `${BHK_DATA[selectedBHK].name} (${selectedPackage} package). ` +
+      `I'd like to discuss this further.`
     );
     window.open(`https://wa.me/919121885090?text=${message}`, "_blank");
   };
@@ -247,8 +203,7 @@ const Estimator = () => {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "CASAMANDUVA Interior Design Cost Estimator",
-    description:
-      "Calculate interior design costs for 1BHK, 2BHK, 3BHK apartments in Hyderabad",
+    description: "Calculate interior design costs for 1BHK, 2BHK, 3BHK apartments in Hyderabad",
     applicationCategory: "DesignApplication",
     operatingSystem: "Web Browser",
     offers: {
@@ -268,6 +223,7 @@ const Estimator = () => {
         url="/estimator"
         schema={estimatorSchema}
       />
+
       {/* Page Hero */}
       <section className="page-hero">
         <div className="page-hero-bg">
@@ -283,23 +239,19 @@ const Estimator = () => {
             <span className="section-badge">Free Estimate</span>
           </AnimatedSection>
           <AnimatedSection animation="fadeUp" delay={0.2}>
-            <h1>
-              Interior Design <span className="text-gold">Cost Estimator</span>
-            </h1>
+            <h1>Interior Design <span className="text-gold">Cost Estimator</span></h1>
           </AnimatedSection>
           <AnimatedSection animation="fadeUp" delay={0.4}>
-            <p>
-              Get an instant estimate for your 1BHK, 2BHK, or 3BHK interior
-              design project
-            </p>
+            <p>Get an instant estimate for your 1BHK, 2BHK, or 3BHK interior design project</p>
           </AnimatedSection>
         </div>
       </section>
+
       {/* Estimator Section */}
       <section className="estimator-section">
         <div className="container">
           <div className="estimator-grid">
-            {/* Left: Form */}
+            {/* Left: Configuration */}
             <div className="estimator-form">
               <h3>Configure Your Project</h3>
 
@@ -308,9 +260,7 @@ const Estimator = () => {
                 {Object.entries(BHK_DATA).map(([key, data]) => (
                   <div
                     key={key}
-                    className={`bhk-option ${
-                      selectedBHK === key ? "selected" : ""
-                    }`}
+                    className={`bhk-option ${selectedBHK === key ? "selected" : ""}`}
                     onClick={() => setSelectedBHK(key)}
                   >
                     <h4>{data.name}</h4>
@@ -320,13 +270,8 @@ const Estimator = () => {
               </div>
 
               {/* Custom Area */}
-              <div
-                className="form-group"
-                style={{ marginBottom: "var(--space-lg)" }}
-              >
-                <label htmlFor="customArea">
-                  Custom Area (sq.ft) - Optional
-                </label>
+              <div className="form-group" style={{ marginBottom: "var(--space-lg)" }}>
+                <label htmlFor="customArea">Custom Area (sq.ft) - Optional</label>
                 <input
                   type="number"
                   id="customArea"
@@ -354,7 +299,6 @@ const Estimator = () => {
                     </label>
                   ))}
                 </div>
-
                 <h4 style={{ marginTop: "var(--space-md)" }}>Add-ons</h4>
                 <div className="room-checkboxes">
                   {additionalRooms.map((room) => (
@@ -378,33 +322,19 @@ const Estimator = () => {
                   {Object.entries(PACKAGES).map(([key, pkg]) => (
                     <div
                       key={key}
-                      className={`package-option ${
-                        selectedPackage === key ? "selected" : ""
-                      }`}
+                      className={`package-option ${selectedPackage === key ? "selected" : ""}`}
                       onClick={() => setSelectedPackage(key)}
                     >
                       <div>
                         <span className="name">
                           {pkg.name}
                           {pkg.popular && (
-                            <span
-                              style={{
-                                marginLeft: "0.5rem",
-                                color: "var(--color-gold)",
-                                fontSize: "0.75rem",
-                              }}
-                            >
+                            <span style={{ marginLeft: "0.5rem", color: "var(--color-gold)", fontSize: "0.75rem" }}>
                               ★ Popular
                             </span>
                           )}
                         </span>
-                        <p
-                          style={{
-                            fontSize: "0.85rem",
-                            margin: "0.25rem 0 0",
-                            opacity: 0.7,
-                          }}
-                        >
+                        <p style={{ fontSize: "0.85rem", margin: "0.25rem 0 0", opacity: 0.7 }}>
                           {pkg.description}
                         </p>
                       </div>
@@ -436,55 +366,33 @@ const Estimator = () => {
                     </div>
                     <div className="breakdown-item">
                       <span className="label">Selected Rooms</span>
-                      <span className="value">
-                        {selectedRooms.length} rooms
-                      </span>
+                      <span className="value">{selectedRooms.length} rooms</span>
                     </div>
                     <div className="breakdown-item">
                       <span className="label">Base Cost</span>
-                      <span className="value">
-                        ₹{estimate.roomTotal.toLocaleString("en-IN")}
-                      </span>
+                      <span className="value">₹{estimate.roomTotal.toLocaleString("en-IN")}</span>
                     </div>
                     <div className="breakdown-item">
                       <span className="label">Finishing & Misc (10%)</span>
-                      <span className="value">
-                        ₹{estimate.miscCost.toLocaleString("en-IN")}
-                      </span>
+                      <span className="value">₹{estimate.miscCost.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
 
                   <div className="total-estimate">
                     <p className="label">Estimated Budget</p>
-                    <p className="amount">
-                      ₹{estimate.grandTotal.toLocaleString("en-IN")}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "0.85rem",
-                        marginTop: "0.5rem",
-                        opacity: 0.7,
-                      }}
-                    >
-                      //≈ ₹{estimate.perSqFt}/sq.ft
-                      Free
+                    <p className="amount">₹{estimate.grandTotal.toLocaleString("en-IN")}</p>
+                    <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", opacity: 0.7 }}>
+                      ≈ ₹{estimate.perSqFt}/sq.ft
                     </p>
                   </div>
 
                   <p className="estimate-note">
-                    * This is an approximate estimate. Final quote may vary
-                    based on site conditions, material choices, and
-                    customizations.
+                    * This is an approximate estimate. Final quote may vary based on site
+                    conditions, material choices, and customizations.
                   </p>
 
                   {!showEnquiryForm ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "var(--space-sm)",
-                      }}
-                    >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
                       <button
                         className="btn btn-primary"
                         onClick={() => setShowEnquiryForm(true)}
@@ -501,89 +409,36 @@ const Estimator = () => {
                       </button>
                     </div>
                   ) : (
-                    <form
-                      onSubmit={handleSubmitEnquiry}
-                      style={{ marginTop: "var(--space-md)" }}
-                    >
-                      <div
-                        className="form-group"
-                        style={{ marginBottom: "var(--space-sm)" }}
-                      >
-                        <input
-                          type="text"
-                          name="name"
-                          placeholder="Your Name *"
-                          value={formData.name}
-                          onChange={handleFormChange}
-                          required
-                          style={{
-                            background: "rgba(255,255,255,0.1)",
-                            border: "1px solid rgba(255,255,255,0.2)",
-                            color: "white",
-                          }}
-                        />
-                      </div>
-                      <div
-                        className="form-group"
-                        style={{ marginBottom: "var(--space-sm)" }}
-                      >
-                        <input
-                          type="tel"
-                          name="phone"
-                          placeholder="Phone Number *"
-                          value={formData.phone}
-                          onChange={handleFormChange}
-                          required
-                          style={{
-                            background: "rgba(255,255,255,0.1)",
-                            border: "1px solid rgba(255,255,255,0.2)",
-                            color: "white",
-                          }}
-                        />
-                      </div>
-                      <div
-                        className="form-group"
-                        style={{ marginBottom: "var(--space-sm)" }}
-                      >
-                        <input
-                          type="email"
-                          name="email"
-                          placeholder="Email Address"
-                          value={formData.email}
-                          onChange={handleFormChange}
-                          style={{
-                            background: "rgba(255,255,255,0.1)",
-                            border: "1px solid rgba(255,255,255,0.2)",
-                            color: "white",
-                          }}
-                        />
-                      </div>
-                      <div
-                        className="form-group"
-                        style={{ marginBottom: "var(--space-md)" }}
-                      >
-                        <input
-                          type="text"
-                          name="location"
-                          placeholder="Property Location"
-                          value={formData.location}
-                          onChange={handleFormChange}
-                          style={{
-                            background: "rgba(255,255,255,0.1)",
-                            border: "1px solid rgba(255,255,255,0.2)",
-                            color: "white",
-                          }}
-                        />
-                      </div>
+                    <form onSubmit={handleSubmitEnquiry} style={{ marginTop: "var(--space-md)" }}>
+                      {[
+                        { name: "name",     type: "text",  placeholder: "Your Name *",       required: true },
+                        { name: "phone",    type: "tel",   placeholder: "Phone Number *",    required: true },
+                        { name: "email",    type: "email", placeholder: "Email Address",     required: false },
+                        { name: "location", type: "text",  placeholder: "Property Location", required: false },
+                      ].map(({ name, type, placeholder, required }) => (
+                        <div className="form-group" key={name} style={{ marginBottom: "var(--space-sm)" }}>
+                          <input
+                            type={type}
+                            name={name}
+                            placeholder={placeholder}
+                            value={formData[name]}
+                            onChange={handleFormChange}
+                            required={required}
+                            style={{
+                              background: "rgba(255,255,255,0.1)",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              color: "white",
+                            }}
+                          />
+                        </div>
+                      ))}
                       <button
                         type="submit"
                         className="btn btn-primary"
                         disabled={isSubmitting}
                         style={{ width: "100%" }}
                       >
-                        {isSubmitting
-                          ? "Submitting..."
-                          : "Request Detailed Quote"}
+                        {isSubmitting ? "Submitting..." : "Request Detailed Quote"}
                       </button>
                       <button
                         type="button"
@@ -607,23 +462,18 @@ const Estimator = () => {
           </div>
         </div>
       </section>
-      <InteriorSolutionsSection />;{/* Package Details Section */}
-      <section
-        className="section"
-        style={{ background: "var(--color-warm-beige)" }}
-      >
+
+      <InteriorSolutionsSection />
+
+      {/* Package Details Section */}
+      <section className="section" style={{ background: "var(--color-warm-beige)" }}>
         <div className="container">
           <AnimatedSection className="section-header">
             <span className="section-badge">Our Packages</span>
-            <h2 className="section-title">
-              What's <span className="text-gold">Included</span>
-            </h2>
+            <h2 className="section-title">What's <span className="text-gold">Included</span></h2>
           </AnimatedSection>
 
-          <div
-            className="process-grid"
-            style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
-          >
+          <div className="process-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
             {Object.entries(PACKAGES).map(([key, pkg], index) => (
               <AnimatedSection
                 key={key}
@@ -633,33 +483,20 @@ const Estimator = () => {
                 style={{ textAlign: "left" }}
               >
                 <h3 style={{ marginBottom: "var(--space-xs)" }}>{pkg.name}</h3>
-                <p
-                  className="text-gold"
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "600",
-                    marginBottom: "var(--space-md)",
-                  }}
-                >
+                <p className="text-gold" style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "var(--space-md)" }}>
                   ₹{pkg.rate}/sq.ft
                 </p>
-                <p style={{ marginBottom: "var(--space-md)" }}>
-                  {pkg.description}
-                </p>
+                <p style={{ marginBottom: "var(--space-md)" }}>{pkg.description}</p>
                 <ul style={{ listStyle: "none", padding: 0 }}>
                   {pkg.features.map((feature, i) => (
-                    <li
-                      key={i}
-                      style={{
-                        padding: "0.5rem 0",
-                        borderBottom: "1px solid rgba(44,44,44,0.1)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <span style={{ color: "var(--color-gold)" }}>✓</span>{" "}
-                      {feature}
+                    <li key={i} style={{
+                      padding: "0.5rem 0",
+                      borderBottom: "1px solid rgba(44,44,44,0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}>
+                      <span style={{ color: "var(--color-gold)" }}>✓</span> {feature}
                     </li>
                   ))}
                 </ul>
@@ -668,7 +505,8 @@ const Estimator = () => {
           </div>
         </div>
       </section>
-      {/* CTA Section */}
+
+      {/* CTA */}
       <section className="cta-section">
         <div className="container">
           <AnimatedSection className="cta-content">

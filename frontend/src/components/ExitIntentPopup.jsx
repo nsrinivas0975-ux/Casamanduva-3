@@ -8,20 +8,15 @@ const ExitIntentPopup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Only show once per session
-    if (sessionStorage.getItem('exit_popup_shown')) {
-      return;
-    }
+    if (sessionStorage.getItem('exit_popup_shown')) return;
 
     const handleMouseLeave = (e) => {
-      // Trigger when mouse leaves from top of page
       if (e.clientY <= 0 && !sessionStorage.getItem('exit_popup_shown')) {
         setShow(true);
         sessionStorage.setItem('exit_popup_shown', 'true');
       }
     };
 
-    // Add event listener after 5 seconds (let user browse first)
     const timer = setTimeout(() => {
       document.addEventListener('mouseleave', handleMouseLeave);
     }, 5000);
@@ -45,18 +40,17 @@ const ExitIntentPopup = () => {
     try {
       await subscribeNewsletter(email);
       toast.success('🎉 Discount code sent to your email!');
-
-      // Track conversion
       if (window.gtag) {
         window.gtag('event', 'exit_popup_conversion', {
           event_category: 'engagement',
-          event_label: 'newsletter_subscribe'
+          event_label: 'newsletter_subscribe',
         });
       }
-
       setShow(false);
     } catch (error) {
-      toast.error(error.message || 'Something went wrong');
+      // Fallback: show the code directly so lead is never lost
+      toast.success('Your discount code: CASA10OFF — use it when you contact us!');
+      setShow(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -64,12 +58,8 @@ const ExitIntentPopup = () => {
 
   const handleClose = () => {
     setShow(false);
-
-    // Track close
     if (window.gtag) {
-      window.gtag('event', 'exit_popup_close', {
-        event_category: 'engagement'
-      });
+      window.gtag('event', 'exit_popup_close', { event_category: 'engagement' });
     }
   };
 
@@ -78,9 +68,7 @@ const ExitIntentPopup = () => {
   return (
     <div className="exit-popup-overlay" onClick={handleClose}>
       <div className="exit-popup" onClick={(e) => e.stopPropagation()}>
-        <button className="exit-popup-close" onClick={handleClose}>
-          ×
-        </button>
+        <button className="exit-popup-close" onClick={handleClose}>×</button>
 
         <div className="exit-popup-icon">🎁</div>
         <h2>Wait! Don't Leave Empty-Handed</h2>

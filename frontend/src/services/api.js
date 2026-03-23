@@ -1,151 +1,155 @@
-import axios from 'axios';
-import toast from 'react-hot-toast';
+// ================================================
+// CASAMANDUVA - Frontend-only API Service
+// Uses EmailJS for form submissions (no backend)
+// ================================================
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+import emailjs from '@emailjs/browser';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000,
-});
+// ── EmailJS config ──────────────────────────────
+const EMAILJS_SERVICE_ID = 'service_e49hvl5';
+const EMAILJS_PUBLIC_KEY = 'OUaB704vITVaQUJVf';
 
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 429) {
-      toast.error('Too many requests. Please try again later.');
-    }
-    if (error.response?.status === 500) {
-      console.error('Server error:', error.response.data);
-    }
-    return Promise.reject(error);
-  }
-);
+// Your 2 templates
+const TEMPLATE_ENQUIRY  = 'template_vkz0yom';  // Enquiry form + Newsletter
+const TEMPLATE_ESTIMATE = 'template_bx8kx8y';  // Estimate enquiry
+// ─────────────────────────────────────────────────
 
-// VISITOR TRACKING
-export const trackVisitor = async () => {
-  try {
-    const visitorData = {
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      referrer: document.referrer || 'direct',
-      screenResolution: `${window.screen.width}x${window.screen.height}`,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      page: window.location.pathname,
-    };
+let _emailjsInitialised = false;
 
-    const response = await api.post('/visitors/track', visitorData);
-    return response.data;
-  } catch (error) {
-    console.error('Visitor tracking error:', error.message);
-    throw error;
-  }
-};
+function initEmailJS() {
+  if (_emailjsInitialised) return;
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+  _emailjsInitialised = true;
+}
 
-// ENQUIRY FORM
+// ── VISITOR TRACKING (no-op — GA4 handles this) ──
+export const trackVisitor = async () => Promise.resolve();
+
+// ── ENQUIRY FORM ──────────────────────────────────
 export const submitEnquiry = async (enquiryData) => {
-  try {
-    if (!enquiryData.name?.trim()) throw new Error('Name is required');
-    if (!enquiryData.email?.includes('@')) throw new Error('Valid email is required');
-    if (!enquiryData.phone?.match(/^[0-9+\-()\\s]{10,}$/)) {
-      throw new Error('Valid phone number required');
-    }
-    if (!enquiryData.message?.trim()) throw new Error('Project description required');
+  if (!enquiryData.name?.trim())         throw new Error('Name is required');
+  if (!enquiryData.email?.includes('@')) throw new Error('Valid email is required');
+  if (!enquiryData.phone?.match(/^[0-9+\-()\\s]{10,}$/)) {
+    throw new Error('Valid phone number required');
+  }
+  if (!enquiryData.message?.trim()) throw new Error('Project description required');
 
-    const response = await api.post('/enquiries', enquiryData);
-    return response.data;
-  } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
+  initEmailJS();
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, TEMPLATE_ENQUIRY, {
+      from_name:     enquiryData.name.trim(),
+      from_email:    enquiryData.email.trim().toLowerCase(),
+      phone:         enquiryData.phone.trim(),
+      property_type: enquiryData.propertyType || 'Not specified',
+      budget:        enquiryData.budget        || 'Not specified',
+      service:       enquiryData.service       || 'Not specified',
+      message:       enquiryData.message.trim(),
+      source:        `Enquiry Form (${enquiryData.source || 'website'})`,
+      reply_to:      enquiryData.email.trim().toLowerCase(),
+    });
+
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-XXXXXXXXX/CONVERSION_ID',
+        value: 1.0,
+        currency: 'INR',
+      });
     }
-    throw new Error(error.message || 'Failed to submit enquiry');
+    if (window.fbq) {
+      window.fbq('track', 'Lead', {
+        content_name: enquiryData.source,
+        value: 1.0,
+        currency: 'INR',
+      });
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('EmailJS enquiry error:', err);
+    throw new Error('Failed to send. Please try WhatsApp or call us directly.');
   }
 };
 
-export const getEnquiries = async () => {
+// Aliases
+export const submitContactForm = submitEnquiry;
+export const getEnquiries = async () => [];
+
+// ── ESTIMATE ENQUIRY ──────────────────────────────
+export const saveEstimateEnquiry = async (data) => {
+  if (!data.name?.trim()) throw new Error('Name is required');
+  if (!data.phone?.match(/^[0-9+\-()\\s]{10,}$/)) {
+    throw new Error('Valid phone required');
+  }
+  if (!data.area || data.area < 300 || data.area > 5000) {
+    throw new Error('Area must be 300–5000 sq.ft');
+  }
+
+  initEmailJS();
+
   try {
-    const response = await api.get('/enquiries');
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch enquiries');
+    await emailjs.send(EMAILJS_SERVICE_ID, TEMPLATE_ESTIMATE, {
+      from_name:        data.name.trim(),
+      phone:            data.phone.trim(),
+      from_email:       data.email?.trim() || 'Not provided',
+      location:         data.location?.trim() || 'Not specified',
+      bhk_type:         (data.bhkType || '').toUpperCase(),
+      package_type:     data.packageType || 'Not specified',
+      area:             data.area,
+      selected_rooms:   data.selectedRooms || 'Default rooms',
+      estimated_budget: data.estimatedBudget
+        ? `₹${Number(data.estimatedBudget).toLocaleString('en-IN')}`
+        : 'Not calculated',
+      reply_to:         data.email?.trim() || '',
+    });
+
+    return { success: true };
+  } catch (err) {
+    console.error('EmailJS estimate error:', err);
+    throw new Error('Failed to submit. Please try WhatsApp or call us directly.');
   }
 };
 
-// ESTIMATIONS
-export const getBHKEstimations = async () => {
-  try {
-    const response = await api.get('/estimations/bhk');
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch configurations');
-  }
-};
-
-export const calculateEstimate = async (estimateRequest) => {
-  try {
-    if (!estimateRequest.bhkType) throw new Error('BHK type required');
-    if (!estimateRequest.packageType) throw new Error('Package type required');
-
-    const response = await api.post('/estimations/calculate', estimateRequest);
-    return response.data;
-  } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
-    }
-    throw new Error(error.message || 'Failed to calculate');
-  }
-};
-
-export const saveEstimateEnquiry = async (estimateEnquiry) => {
-  try {
-    if (!estimateEnquiry.name?.trim()) throw new Error('Name is required');
-    if (!estimateEnquiry.phone?.match(/^[0-9+\-()\\s]{10,}$/)) {
-      throw new Error('Valid phone required');
-    }
-    if (!estimateEnquiry.area || estimateEnquiry.area < 300 || estimateEnquiry.area > 5000) {
-      throw new Error('Area must be 300-5000 sq.ft');
-    }
-
-    const response = await api.post('/estimations/enquiry', estimateEnquiry);
-    return response.data;
-  } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
-    }
-    throw new Error(error.message || 'Failed to save estimate');
-  }
-};
-
-// CONTACT
-export const submitContactForm = async (contactData) => {
-  try {
-    const response = await api.post('/contact', contactData);
-    return response.data;
-  } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
-    }
-    throw new Error('Failed to submit form');
-  }
-};
-
-// NEWSLETTER
+// ── NEWSLETTER ────────────────────────────────────
+// Reuses TEMPLATE_ENQUIRY with source = 'Newsletter Subscription'
 export const subscribeNewsletter = async (email) => {
-  try {
-    if (!email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      throw new Error('Invalid email format');
-    }
+  if (!email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    throw new Error('Invalid email format');
+  }
 
-    const response = await api.post('/newsletter/subscribe', { email });
-    return response.data;
-  } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
-    }
-    throw new Error('Failed to subscribe');
+  initEmailJS();
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, TEMPLATE_ENQUIRY, {
+      from_name:     'Newsletter Subscriber',
+      from_email:    email.trim().toLowerCase(),
+      phone:         'N/A',
+      property_type: 'N/A',
+      budget:        'N/A',
+      service:       'N/A',
+      message:       `New newsletter subscription: ${email.trim().toLowerCase()}`,
+      source:        'Newsletter Subscription',
+      reply_to:      email.trim().toLowerCase(),
+    });
+
+    return { success: true };
+  } catch (err) {
+    console.error('EmailJS newsletter error:', err);
+    throw new Error('Failed to subscribe. Please try again.');
   }
 };
 
-export default api;
+// ── Estimate helpers (client-side only) ──────────
+export const getBHKEstimations = async () => Promise.resolve({});
+export const calculateEstimate = async () => Promise.resolve({});
+
+export default {
+  trackVisitor,
+  submitEnquiry,
+  submitContactForm,
+  saveEstimateEnquiry,
+  getBHKEstimations,
+  calculateEstimate,
+  subscribeNewsletter,
+  getEnquiries,
+};
